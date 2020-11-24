@@ -4,6 +4,8 @@ const readline = require('readline').createInterface({
     output: process.stdout
   });
 
+const prompts = require('prompts');
+
 const game = () => {
     let numberOfPlayers = 0;
     let deck = [];
@@ -16,17 +18,12 @@ const game = () => {
     readline.question("Hello, welcome to Holdem, how many players do you want to play against?", (answer) => {
         console.log(`So you'll be playing against ${answer} players!`);
         deck = createRandomDeck()
-        // console.log("deck", deck) 
+        console.log("deck", deck) 
         numberOfPlayers = (parseInt(answer) + 1);
-        // console.log("numberOfPlayers", numberOfPlayers)
-        cardIndex = numberOfPlayers * 2 + 5; 
+        console.log("numberOfPlayers", numberOfPlayers)
+        // cardIndex = numberOfPlayers * 2 + 5; 
         // console.log("cardIndex in game", cardIndex)
         console.log("Everyone starts with $100");
-
-        //
-        // 
-        // testing scope here 
-        // gameData = dealCards(numberOfPlayers, deck);
 
         // console.log(dealCards(numberOfPlayers, deck))    
         readline.question("Shall we play? (y/n) ", (answer) => {
@@ -38,6 +35,8 @@ const game = () => {
         })
         
     });
+
+    // convert everything to prompts + async await 
 
     // start of round 
     // check for cardIndex to make sure there are still shuffled cards in the deck if not, create new deck 
@@ -76,30 +75,34 @@ const createRandomDeck = () => {
 };
 // createRandomDeck()
 
-const dealCards = (numberOfPlayers, deck) => {
+const dealCards = (numberOfPlayers, deck, cardIndex) => {
 
     // need to seperate logic to make it so that we can take in a cardIndex arg and start from there and not from index 0 
-    
-    const initialDeal = {
-        'Pool': {},
-    }; 
+    //
+    // ***********
+    // now need to check to make sure that this is working 
+
+    const dealt = {}; 
+    let currentDeckIndex = 0;
+
     for (i = 1; i <= numberOfPlayers; i++) {
-        initialDeal[`Player ${i}`] = {
-            "card 1": deck[i - 1],
-            "card 2": deck[i - 1 + numberOfPlayers]
+        dealt[`Player ${i}`] = {
+            "card 1": deck[cardIndex + i - 1],
+            "card 2": deck[cardIndex + i - 1 + numberOfPlayers]
         }
     };
     for (i = 1; i <= 5; i++) {
-        const currentDeckIndex = numberOfPlayers * 2 + i - 1
-        // console.log("currentDeckIndex", currentDeckIndex)
-        initialDeal[`Pool`] = {
-            ... initialDeal[`Pool`],
+        currentDeckIndex = cardIndex + (numberOfPlayers * 2 + i - 1)
+        console.log("currentDeckIndex", currentDeckIndex)
+        dealt[`Pool`] = {
+            ...dealt['Pool'],
             ['card ' + i]: deck[currentDeckIndex]
         }
     };
+    cardIndex = currentDeckIndex + 1; 
     // console.log(deck)
-    // console.log(initialDeal)
-    return initialDeal;
+    console.log("dealt", dealt)
+    return dealt;
 };
 
 const convertCards = (cardObj) => {
@@ -149,7 +152,10 @@ const fullRound = (numberOfPlayers, deck, gameData, cardIndex) => {
     // check $ 
 
     // pass out cards 
-    gameData = dealCards(numberOfPlayers, deck);
+    gameData = {
+        ...gameData,
+        ...dealCards(numberOfPlayers, deck, cardIndex)
+    };
     
     // tell player what they have 
     console.log(`You have a ${convertCards(gameData['Player 1']['card 1'])} and a ${convertCards(gameData['Player 1']['card 2'])}`)
